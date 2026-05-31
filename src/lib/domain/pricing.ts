@@ -7,19 +7,19 @@ export function summarizeAnnualPayouts(
   annualPayouts: AnnualPayoutInput[],
   maxYears = 5
 ) {
-  const positivePayouts = annualPayouts
-    .filter((payout) => Number.isFinite(payout.amount) && payout.amount > 0)
+  const availablePayouts = annualPayouts
+    .filter((payout) => Number.isFinite(payout.amount) && payout.amount >= 0)
     .sort((a, b) => b.year - a.year)
     .slice(0, maxYears);
 
-  const total = positivePayouts.reduce((sum, payout) => sum + payout.amount, 0);
+  const total = availablePayouts.reduce((sum, payout) => sum + payout.amount, 0);
   const averageAnnualPayout =
-    positivePayouts.length > 0 ? total / positivePayouts.length : null;
+    availablePayouts.length > 0 ? total / availablePayouts.length : null;
 
   return {
-    yearsUsed: positivePayouts.map((payout) => payout.year),
+    yearsUsed: availablePayouts.map((payout) => payout.year),
     averageAnnualPayout,
-    isPartial: positivePayouts.length > 0 && positivePayouts.length < maxYears
+    isPartial: availablePayouts.length > 0 && availablePayouts.length < maxYears
   };
 }
 
@@ -51,6 +51,7 @@ export function calculateAssetMetrics(input: {
     !Number.isFinite(input.currentPrice) ||
     input.currentPrice <= 0 ||
     summary.averageAnnualPayout === null ||
+    !Number.isFinite(targetYield) ||
     targetYield <= 0
   ) {
     return {
