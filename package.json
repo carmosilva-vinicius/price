@@ -9,7 +9,7 @@
     "start": "next start",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
-    "lint": "tsc --noEmit"
+    "lint": "next typegen && tsc --noEmit"
   },
   "dependencies": {
     "better-sqlite3": "^12.10.0",
