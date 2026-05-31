@@ -94,6 +94,26 @@ describe("pricing rules", () => {
     expect(summary.isPartial).toBe(true);
   });
 
+  it("returns finite public metrics when all available payouts are zero", () => {
+    const metrics = calculateAssetMetrics({
+      currentPrice: 10,
+      annualPayouts: [
+        { year: 2024, amount: 0 },
+        { year: 2025, amount: 0 }
+      ],
+      targetYield: 0.06
+    });
+
+    expect(metrics).toMatchObject({
+      dataState: "partial",
+      economicStatus: "expensive",
+      averageAnnualPayout: 0,
+      ceilingPrice: 0,
+      differencePercent: null,
+      yearsUsed: [2025, 2024]
+    });
+  });
+
   it("uses the latest five years when more than five are available", () => {
     const summary = summarizeAnnualPayouts([
       { year: 2020, amount: 1 },

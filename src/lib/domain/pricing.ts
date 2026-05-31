@@ -69,13 +69,15 @@ export function calculateAssetMetrics(input: {
     currentPrice: input.currentPrice,
     ceilingPrice
   });
+  const differencePercent =
+    ceilingPrice > 0 ? (input.currentPrice - ceilingPrice) / ceilingPrice : null;
 
   return {
     dataState: summary.isPartial ? "partial" : "complete",
     economicStatus,
     averageAnnualPayout: summary.averageAnnualPayout,
     ceilingPrice,
-    differencePercent: (input.currentPrice - ceilingPrice) / ceilingPrice,
+    differencePercent,
     yearsUsed: summary.yearsUsed
   };
 }
