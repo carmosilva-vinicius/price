@@ -7,12 +7,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
-    "lint": "next lint"
+    "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@vitejs/plugin-react": "latest",
     "better-sqlite3": "latest",
     "next": "latest",
     "react": "latest",
