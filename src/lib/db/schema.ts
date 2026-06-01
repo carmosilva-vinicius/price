@@ -1,6 +1,7 @@
 import type Database from "better-sqlite3";
 
 export function ensureSchema(db: Database.Database) {
+  db.pragma("foreign_keys = ON");
   db.exec(`
     CREATE TABLE IF NOT EXISTS assets (
       ticker TEXT PRIMARY KEY,
