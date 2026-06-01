@@ -91,3 +91,19 @@ describe("brapi mapper", () => {
     ]);
   });
 });
+
+describe("brapi mapper hardening", () => {
+  it("skips negative payout rates and malformed calendar dates", () => {
+    const payouts = mapBrapiDividendsToAnnualPayouts("TAEE11", [
+      { paymentDate: "2025-02-28", rate: 1, label: "DIVIDEND" },
+      { paymentDate: "2025-03-01", rate: -0.5, label: "DIVIDEND" },
+      { paymentDate: "2025-02-31", rate: 2, label: "DIVIDEND" },
+      { approvedOn: "2024-04-01", rate: 3, label: "JCP" }
+    ]);
+
+    expect(payouts).toEqual([
+      { ticker: "TAEE11", year: 2025, amount: 1 },
+      { ticker: "TAEE11", year: 2024, amount: 3 }
+    ]);
+  });
+});
