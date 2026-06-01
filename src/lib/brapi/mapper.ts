@@ -19,7 +19,11 @@ export type BrapiDividend = {
 };
 
 export function mapBrapiQuote(result: BrapiQuoteResult) {
-  if (!result.symbol || !result.regularMarketPrice) {
+  if (
+    !result.symbol ||
+    result.regularMarketPrice === undefined ||
+    !Number.isFinite(result.regularMarketPrice)
+  ) {
     throw new Error("brapi quote result is missing symbol or price");
   }
 
