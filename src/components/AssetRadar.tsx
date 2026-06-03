@@ -166,6 +166,60 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
     }
   }
 
+  async function saveManualQuote(assetTicker: string, value: string) {
+    const price = Number(value.replace(",", "."));
+    if (!Number.isFinite(price) || price <= 0) {
+      setMessage("Cotacao manual invalida.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/assets/${assetTicker}/quote`, {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ price })
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        setMessage(payload.error ?? "Nao foi possivel salvar a cotacao.");
+        return;
+      }
+
+      setAssets(payload.assets);
+      setMessage(null);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Nao foi possivel salvar a cotacao.");
+    }
+  }
+
+  async function saveManualPayout(assetTicker: string, year: number, value: string) {
+    const amount = Number(value.replace(",", "."));
+    if (!Number.isFinite(amount) || amount < 0) {
+      setMessage("Provento manual invalido.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/assets/${assetTicker}/payouts`, {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ year, amount })
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        setMessage(payload.error ?? "Nao foi possivel salvar o provento.");
+        return;
+      }
+
+      setAssets(payload.assets);
+      setMessage(null);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Nao foi possivel salvar o provento.");
+    }
+  }
+
   return (
     <section className={styles.tool}>
       <div className={styles.toolbar}>
@@ -226,7 +280,14 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
                   <strong>{asset.ticker}</strong>
                   {asset.name ? <span>{asset.name}</span> : null}
                 </td>
-                <td>{money(asset.currentPrice)}</td>
+                <td>
+                  <input
+                    className={styles.cellInput}
+                    defaultValue={asset.currentPrice ?? ""}
+                    onBlur={(event) => void saveManualQuote(asset.ticker, event.target.value)}
+                    aria-label={`Cotacao manual de ${asset.ticker}`}
+                  />
+                </td>
                 <td>{money(asset.metrics.averageAnnualPayout)}</td>
                 <td>{money(asset.metrics.ceilingPrice)}</td>
                 <td>{percent(asset.metrics.differencePercent)}</td>
@@ -238,6 +299,24 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
                 <td>{asset.quoteSource ?? "-"}</td>
                 <td>{new Date(asset.updatedAt).toLocaleString("pt-BR")}</td>
                 <td>
+                  <details className={styles.payoutEditor}>
+                    <summary>Dividendos</summary>
+                    {[0, 1, 2, 3, 4].map((offset) => {
+                      const year = new Date().getFullYear() - offset;
+                      const payout = asset.annualPayouts.find((item) => item.year === year);
+                      return (
+                        <label key={year}>
+                          {year}
+                          <input
+                            defaultValue={payout?.amount ?? ""}
+                            onBlur={(event) =>
+                              void saveManualPayout(asset.ticker, year, event.target.value)
+                            }
+                          />
+                        </label>
+                      );
+                    })}
+                  </details>
                   <button
                     type="button"
                     disabled={busyTickers.has(asset.ticker)}

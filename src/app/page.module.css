@@ -154,3 +154,42 @@
     flex-direction: column;
   }
 }
+
+.cellInput {
+  width: 96px;
+  height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0 8px;
+  color: var(--text);
+}
+
+.payoutEditor {
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.payoutEditor summary {
+  cursor: pointer;
+  color: var(--blue);
+  font-weight: 700;
+  outline-offset: 3px;
+}
+
+.payoutEditor label {
+  display: grid;
+  grid-template-columns: 48px 96px;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  color: var(--text);
+}
+
+.payoutEditor input {
+  width: 96px;
+  height: 30px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0 8px;
+}
