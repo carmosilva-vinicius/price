@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import styles from "@/app/page.module.css";
 
 type AssetRow = {
@@ -76,6 +76,8 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
   const [message, setMessage] = useState<string | null>(null);
   const [busyTickers, setBusyTickers] = useState<Set<string>>(() => new Set());
   const [isCreating, setIsCreating] = useState(false);
+  const busyTickersRef = useRef<Set<string>>(new Set());
+  const isCreatingRef = useRef(false);
 
   const normalizedTicker = ticker.trim();
 
@@ -101,6 +103,11 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
   }
 
   async function createAsset() {
+    if (isCreatingRef.current || normalizedTicker.length === 0) {
+      return;
+    }
+
+    isCreatingRef.current = true;
     setMessage(null);
     setIsCreating(true);
 
@@ -122,11 +129,17 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Nao foi possivel adicionar o ativo.");
     } finally {
+      isCreatingRef.current = false;
       setIsCreating(false);
     }
   }
 
   async function refreshAsset(assetTicker: string) {
+    if (busyTickersRef.current.has(assetTicker)) {
+      return;
+    }
+
+    busyTickersRef.current.add(assetTicker);
     setBusyTickers((current) => new Set(current).add(assetTicker));
     setMessage(null);
 
@@ -144,6 +157,7 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
       const detail = error instanceof Error ? error.message : "Erro inesperado";
       setMessage(`Falha ao atualizar ${assetTicker}: ${detail}`);
     } finally {
+      busyTickersRef.current.delete(assetTicker);
       setBusyTickers((current) => {
         const next = new Set(current);
         next.delete(assetTicker);
