@@ -51,3 +51,34 @@ describe("asset repository", () => {
     });
   });
 });
+
+it("refreshes api data without overwriting manual overrides", () => {
+  const db = new Database(":memory:");
+  ensureSchema(db);
+  const repo = createAssetRepository(db);
+
+  repo.upsertQuote({ ticker: "TAEE11", price: 10, currency: "BRL", source: "manual" });
+  repo.upsertAnnualPayout({ ticker: "TAEE11", year: 2025, amount: 1.5, source: "manual" });
+  repo.upsertAnnualPayout({ ticker: "TAEE11", year: 2024, amount: 2, source: "api" });
+
+  repo.refreshApiData({
+    ticker: "TAEE11",
+    name: "TAESA",
+    quote: { price: 20, currency: "BRL", quotedAt: "2026-01-01T00:00:00.000Z" },
+    payouts: [
+      { year: 2025, amount: 9 },
+      { year: 2023, amount: 3 }
+    ]
+  });
+
+  expect(repo.listAssets()[0]).toMatchObject({
+    ticker: "TAEE11",
+    name: "TAESA",
+    currentPrice: 10,
+    quoteSource: "manual",
+    annualPayouts: [
+      { year: 2025, amount: 1.5, source: "manual" },
+      { year: 2023, amount: 3, source: "api" }
+    ]
+  });
+});

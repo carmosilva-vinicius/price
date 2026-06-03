@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { badRequestResponse } from "@/app/api/errors";
 import { listAssetRows, updateManualPayout } from "@/lib/services/assets";
 
 const schema = z.object({
@@ -12,7 +13,12 @@ export async function PUT(
   context: { params: Promise<{ ticker: string }> }
 ) {
   const { ticker } = await context.params;
-  const body = schema.parse(await request.json());
-  updateManualPayout({ ticker, year: body.year, amount: body.amount });
-  return NextResponse.json({ assets: listAssetRows() });
+
+  try {
+    const body = schema.parse(await request.json());
+    updateManualPayout({ ticker, year: body.year, amount: body.amount });
+    return NextResponse.json({ assets: listAssetRows() });
+  } catch (error) {
+    return badRequestResponse(error);
+  }
 }

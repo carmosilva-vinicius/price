@@ -37,25 +37,19 @@ export async function refreshAsset(tickerInput: string) {
     ticker,
     result.dividendsData?.cashDividends ?? []
   );
-  const assetRepo = repo();
-
-  assetRepo.createAsset(quote.ticker, quote.name);
-  assetRepo.upsertQuote({
+  repo().refreshApiData({
     ticker: quote.ticker,
-    price: quote.price,
-    currency: quote.currency,
-    source: "api",
-    quotedAt: quote.quotedAt
-  });
-
-  for (const payout of payouts) {
-    assetRepo.upsertAnnualPayout({
-      ticker: payout.ticker,
+    name: quote.name,
+    quote: {
+      price: quote.price,
+      currency: quote.currency,
+      quotedAt: quote.quotedAt
+    },
+    payouts: payouts.map((payout) => ({
       year: payout.year,
-      amount: payout.amount,
-      source: "api"
-    });
-  }
+      amount: payout.amount
+    }))
+  });
 
   return listAssetRows().find((asset) => asset.ticker === ticker) ?? null;
 }

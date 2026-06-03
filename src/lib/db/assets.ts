@@ -17,6 +17,20 @@ export type StoredAsset = {
   annualPayouts: StoredAnnualPayout[];
 };
 
+export type ApiRefreshInput = {
+  ticker: string;
+  name: string | null;
+  quote: {
+    price: number;
+    currency: string;
+    quotedAt: string;
+  };
+  payouts: Array<{
+    year: number;
+    amount: number;
+  }>;
+};
+
 export function normalizeTicker(ticker: string) {
   return ticker.trim().toUpperCase().replace(/\.SA$/, "");
 }
@@ -76,6 +90,57 @@ export function createAssetRepository(db: Database.Database) {
     db.prepare(`UPDATE assets SET updated_at = ? WHERE ticker = ?`).run(now, ticker);
   }
 
+  const refreshApiDataTransaction = db.transaction((input: ApiRefreshInput) => {
+    const ticker = normalizeTicker(input.ticker);
+    const now = new Date().toISOString();
+
+    createAsset(ticker, input.name);
+
+    const quoteRow = db
+      .prepare(`SELECT source FROM quotes WHERE ticker = ?`)
+      .get(ticker) as { source: DataSource } | undefined;
+
+    if (quoteRow?.source !== "manual") {
+      db.prepare(
+        `INSERT INTO quotes (ticker, price, currency, source, quoted_at, captured_at)
+         VALUES (?, ?, ?, 'api', ?, ?)
+         ON CONFLICT(ticker) DO UPDATE SET
+           price = excluded.price,
+           currency = excluded.currency,
+           source = excluded.source,
+           quoted_at = excluded.quoted_at,
+           captured_at = excluded.captured_at`
+      ).run(ticker, input.quote.price, input.quote.currency, input.quote.quotedAt, now);
+    }
+
+    db.prepare(`DELETE FROM annual_payouts WHERE ticker = ? AND source = 'api'`).run(ticker);
+
+    const manualYears = new Set(
+      (
+        db
+          .prepare(`SELECT year FROM annual_payouts WHERE ticker = ? AND source = 'manual'`)
+          .all(ticker) as Array<{ year: number }>
+      ).map((row) => row.year)
+    );
+
+    const insertPayout = db.prepare(
+      `INSERT INTO annual_payouts (ticker, year, amount, source, updated_at)
+       VALUES (?, ?, ?, 'api', ?)`
+    );
+
+    for (const payout of input.payouts) {
+      if (!manualYears.has(payout.year)) {
+        insertPayout.run(ticker, payout.year, payout.amount, now);
+      }
+    }
+
+    db.prepare(`UPDATE assets SET updated_at = ? WHERE ticker = ?`).run(now, ticker);
+  });
+
+  function refreshApiData(input: ApiRefreshInput) {
+    refreshApiDataTransaction(input);
+  }
+
   function listAssets(): StoredAsset[] {
     const assetRows = db
       .prepare(
@@ -106,6 +171,7 @@ export function createAssetRepository(db: Database.Database) {
     createAsset,
     upsertQuote,
     upsertAnnualPayout,
+    refreshApiData,
     listAssets
   };
 }
