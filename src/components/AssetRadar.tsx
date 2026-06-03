@@ -75,6 +75,7 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
   const [filter, setFilter] = useState("all");
   const [message, setMessage] = useState<string | null>(null);
   const [busyTicker, setBusyTicker] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
 
   const visibleAssets = useMemo(() => {
     if (filter === "all") {
@@ -90,42 +91,59 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
 
   async function loadAssets() {
     const response = await fetch("/api/assets");
+    if (!response.ok) {
+      throw new Error("Nao foi possivel carregar os ativos.");
+    }
     const payload = (await response.json()) as { assets: AssetRow[] };
     setAssets(payload.assets);
   }
 
   async function createAsset() {
     setMessage(null);
-    const response = await fetch("/api/assets", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ ticker })
-    });
-    const payload = await response.json();
+    setIsCreating(true);
 
-    if (!response.ok) {
-      setMessage(payload.error ?? "Nao foi possivel adicionar o ativo.");
-      return;
+    try {
+      const response = await fetch("/api/assets", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ ticker })
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        setMessage(payload.error ?? "Nao foi possivel adicionar o ativo.");
+        return;
+      }
+
+      setAssets(payload.assets);
+      setTicker("");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Nao foi possivel adicionar o ativo.");
+    } finally {
+      setIsCreating(false);
     }
-
-    setAssets(payload.assets);
-    setTicker("");
   }
 
   async function refreshAsset(assetTicker: string) {
     setBusyTicker(assetTicker);
     setMessage(null);
-    const response = await fetch(`/api/assets/${assetTicker}/refresh`, { method: "POST" });
 
-    if (!response.ok) {
-      const payload = await response.json();
-      setMessage(`Falha ao atualizar ${assetTicker}: ${payload.error}`);
+    try {
+      const response = await fetch(`/api/assets/${assetTicker}/refresh`, { method: "POST" });
+
+      if (!response.ok) {
+        const payload = await response.json();
+        setMessage(`Falha ao atualizar ${assetTicker}: ${payload.error}`);
+        return;
+      }
+
+      await loadAssets();
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : "Erro inesperado";
+      setMessage(`Falha ao atualizar ${assetTicker}: ${detail}`);
+    } finally {
       setBusyTicker(null);
-      return;
     }
-
-    await loadAssets();
-    setBusyTicker(null);
   }
 
   return (
@@ -143,9 +161,15 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
             placeholder="TAEE11"
             aria-label="Ticker"
           />
-          <button type="submit">Adicionar</button>
+          <button type="submit" disabled={isCreating}>
+            {isCreating ? "Adicionando" : "Adicionar"}
+          </button>
         </form>
-        <select value={filter} onChange={(event) => setFilter(event.target.value)}>
+        <select
+          value={filter}
+          onChange={(event) => setFilter(event.target.value)}
+          aria-label="Filtrar ativos por status"
+        >
           <option value="all">Todos</option>
           <option value="discounted">Descontadas</option>
           <option value="near">Proximas</option>
@@ -154,7 +178,11 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
         </select>
       </div>
 
-      {message ? <p className={styles.message}>{message}</p> : null}
+      {message ? (
+        <p className={styles.message} role="status" aria-live="polite">
+          {message}
+        </p>
+      ) : null}
 
       <div className={styles.tableWrap}>
         <table>
