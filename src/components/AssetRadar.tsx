@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "@/app/page.module.css";
 
 type AssetRow = {
@@ -78,8 +78,32 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
   const [isCreating, setIsCreating] = useState(false);
   const busyTickersRef = useRef<Set<string>>(new Set());
   const isCreatingRef = useRef(false);
+  const manualSaveSequenceRef = useRef(0);
+  const [quoteDrafts, setQuoteDrafts] = useState<Record<string, string>>({});
+  const [payoutDrafts, setPayoutDrafts] = useState<Record<string, string>>({});
 
   const normalizedTicker = ticker.trim();
+
+  useEffect(() => {
+    setQuoteDrafts((current) => {
+      const next: Record<string, string> = {};
+      for (const asset of assets) {
+        next[asset.ticker] = current[asset.ticker] ?? (asset.currentPrice?.toString() ?? "");
+      }
+      return next;
+    });
+
+    setPayoutDrafts((current) => {
+      const next: Record<string, string> = {};
+      for (const asset of assets) {
+        for (const payout of asset.annualPayouts) {
+          const key = `${asset.ticker}:${payout.year}`;
+          next[key] = current[key] ?? payout.amount.toString();
+        }
+      }
+      return next;
+    });
+  }, [assets]);
 
   const visibleAssets = useMemo(() => {
     if (filter === "all") {
@@ -173,6 +197,8 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
       return;
     }
 
+    const sequence = ++manualSaveSequenceRef.current;
+
     try {
       const response = await fetch(`/api/assets/${assetTicker}/quote`, {
         method: "PUT",
@@ -186,7 +212,9 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
         return;
       }
 
-      setAssets(payload.assets);
+      if (sequence === manualSaveSequenceRef.current) {
+        setAssets(payload.assets);
+      }
       setMessage(null);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Nao foi possivel salvar a cotacao.");
@@ -199,6 +227,8 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
       setMessage("Provento manual invalido.");
       return;
     }
+
+    const sequence = ++manualSaveSequenceRef.current;
 
     try {
       const response = await fetch(`/api/assets/${assetTicker}/payouts`, {
@@ -213,7 +243,9 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
         return;
       }
 
-      setAssets(payload.assets);
+      if (sequence === manualSaveSequenceRef.current) {
+        setAssets(payload.assets);
+      }
       setMessage(null);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Nao foi possivel salvar o provento.");
@@ -283,7 +315,14 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
                 <td>
                   <input
                     className={styles.cellInput}
-                    defaultValue={asset.currentPrice ?? ""}
+                    inputMode="decimal"
+                    value={quoteDrafts[asset.ticker] ?? ""}
+                    onChange={(event) =>
+                      setQuoteDrafts((current) => ({
+                        ...current,
+                        [asset.ticker]: event.target.value
+                      }))
+                    }
                     onBlur={(event) => void saveManualQuote(asset.ticker, event.target.value)}
                     aria-label={`Cotacao manual de ${asset.ticker}`}
                   />
@@ -308,10 +347,18 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
                         <label key={year}>
                           {year}
                           <input
-                            defaultValue={payout?.amount ?? ""}
+                            inputMode="decimal"
+                            value={payoutDrafts[`${asset.ticker}:${year}`] ?? ""}
+                            onChange={(event) =>
+                              setPayoutDrafts((current) => ({
+                                ...current,
+                                [`${asset.ticker}:${year}`]: event.target.value
+                              }))
+                            }
                             onBlur={(event) =>
                               void saveManualPayout(asset.ticker, year, event.target.value)
                             }
+                            aria-label={`Provento manual de ${asset.ticker} em ${year}`}
                           />
                         </label>
                       );
