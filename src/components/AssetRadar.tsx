@@ -85,24 +85,18 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
   const normalizedTicker = ticker.trim();
 
   useEffect(() => {
-    setQuoteDrafts((current) => {
-      const next: Record<string, string> = {};
-      for (const asset of assets) {
-        next[asset.ticker] = current[asset.ticker] ?? (asset.currentPrice?.toString() ?? "");
-      }
-      return next;
-    });
+    const nextQuoteDrafts: Record<string, string> = {};
+    const nextPayoutDrafts: Record<string, string> = {};
 
-    setPayoutDrafts((current) => {
-      const next: Record<string, string> = {};
-      for (const asset of assets) {
-        for (const payout of asset.annualPayouts) {
-          const key = `${asset.ticker}:${payout.year}`;
-          next[key] = current[key] ?? payout.amount.toString();
-        }
+    for (const asset of assets) {
+      nextQuoteDrafts[asset.ticker] = asset.currentPrice?.toString() ?? "";
+      for (const payout of asset.annualPayouts) {
+        nextPayoutDrafts[`${asset.ticker}:${payout.year}`] = payout.amount.toString();
       }
-      return next;
-    });
+    }
+
+    setQuoteDrafts(nextQuoteDrafts);
+    setPayoutDrafts(nextPayoutDrafts);
   }, [assets]);
 
   const visibleAssets = useMemo(() => {
@@ -213,9 +207,9 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
       }
 
       if (sequence === manualSaveSequenceRef.current) {
-        setAssets(payload.assets);
+        await loadAssets();
+        setMessage(null);
       }
-      setMessage(null);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Nao foi possivel salvar a cotacao.");
     }
@@ -244,9 +238,9 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
       }
 
       if (sequence === manualSaveSequenceRef.current) {
-        setAssets(payload.assets);
+        await loadAssets();
+        setMessage(null);
       }
-      setMessage(null);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Nao foi possivel salvar o provento.");
     }
