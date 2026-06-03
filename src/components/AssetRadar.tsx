@@ -74,8 +74,10 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
   const [ticker, setTicker] = useState("");
   const [filter, setFilter] = useState("all");
   const [message, setMessage] = useState<string | null>(null);
-  const [busyTicker, setBusyTicker] = useState<string | null>(null);
+  const [busyTickers, setBusyTickers] = useState<Set<string>>(() => new Set());
   const [isCreating, setIsCreating] = useState(false);
+
+  const normalizedTicker = ticker.trim();
 
   const visibleAssets = useMemo(() => {
     if (filter === "all") {
@@ -106,7 +108,7 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
       const response = await fetch("/api/assets", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ ticker })
+        body: JSON.stringify({ ticker: normalizedTicker })
       });
       const payload = await response.json();
 
@@ -125,7 +127,7 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
   }
 
   async function refreshAsset(assetTicker: string) {
-    setBusyTicker(assetTicker);
+    setBusyTickers((current) => new Set(current).add(assetTicker));
     setMessage(null);
 
     try {
@@ -142,7 +144,11 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
       const detail = error instanceof Error ? error.message : "Erro inesperado";
       setMessage(`Falha ao atualizar ${assetTicker}: ${detail}`);
     } finally {
-      setBusyTicker(null);
+      setBusyTickers((current) => {
+        const next = new Set(current);
+        next.delete(assetTicker);
+        return next;
+      });
     }
   }
 
@@ -161,7 +167,7 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
             placeholder="TAEE11"
             aria-label="Ticker"
           />
-          <button type="submit" disabled={isCreating}>
+          <button type="submit" disabled={isCreating || normalizedTicker.length === 0}>
             {isCreating ? "Adicionando" : "Adicionar"}
           </button>
         </form>
@@ -220,10 +226,10 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
                 <td>
                   <button
                     type="button"
-                    disabled={busyTicker === asset.ticker}
+                    disabled={busyTickers.has(asset.ticker)}
                     onClick={() => void refreshAsset(asset.ticker)}
                   >
-                    {busyTicker === asset.ticker ? "Atualizando" : "Atualizar"}
+                    {busyTickers.has(asset.ticker) ? "Atualizando" : "Atualizar"}
                   </button>
                 </td>
               </tr>

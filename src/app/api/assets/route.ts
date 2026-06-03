@@ -4,7 +4,7 @@ import { badRequestResponse } from "@/app/api/errors";
 import { createAsset, listAssetRows } from "@/lib/services/assets";
 
 const createAssetSchema = z.object({
-  ticker: z.string().min(1).max(12)
+  ticker: z.string().trim().min(1).max(12)
 });
 
 export async function GET() {
