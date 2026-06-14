@@ -13,44 +13,55 @@ Introduce qualitative analysis (BESST sector filtering, qualitative checklist) a
 ## Phase Details
 
 ### Phase 1: Sector Tagging & Barsi Checklist
+
 **Goal:** Categorize assets by sector (highlighting Barsi's defensive BESST sectors) and store a customizable qualitative checklist in SQLite.
 **Mode:** mvp
 **Depends on:** Nothing (first phase)
 **Requirements:** SECT-01, SECT-02, SECT-03, CHK-01, CHK-02, CHK-03
 **Success Criteria**:
+
   1. User can assign a sector tag (e.g. "Energia", "Bancos", "Varejo") to any stock on the dashboard.
   2. User can filter the dashboard to display only defensive "BESST" sectors.
   3. User can open a Barsi Checklist modal for any asset, toggle standard qualitative criteria, and save inputs which persist in SQLite.
-**Plans:** 2 plans
 
+**Plans:** 2 plans
 Plans:
+
 - [ ] 01-01: SQLite schema migrations and sector/checklist update API endpoints
 - [ ] 01-02: Dashboard UI dropdown filters and Checklist modal integration
 
 ### Phase 2: Passive Income Goal Calculator
+
 **Goal:** Enable simulation of passive income targets and display of target share counts based on average annual payout.
 **Mode:** mvp
 **Depends on:** Phase 1
 **Requirements:** CALC-01, CALC-02
 **Success Criteria**:
+
   1. User can enter a target monthly passive income goal (e.g. R$ 2,000) for a selected stock.
   2. User can view the number of shares and total capital required at the current price to generate that income.
+
 **Plans:** 1 plan
 
 Plans:
+
 - [ ] 02-01: Build and integrate the client-side calculator simulator inside the UI
 
 ### Phase 3: Visual Dividend History Charts
+
 **Goal:** Display 5-year dividend history visually as an SVG bar chart.
 **Mode:** mvp
 **Depends on:** Phase 2
 **Requirements:** CHAR-01, CHAR-02
 **Success Criteria**:
+
   1. User can view a visual 5-year dividend payout chart for a selected asset.
   2. Chart highlights outlier years or dividend traps (volatile payouts).
+
 **Plans:** 1 plan
 
 Plans:
+
 - [ ] 03-01: Implement native React SVG dividend bar charts and integration in detail drawer/view
 
 ## Progress
