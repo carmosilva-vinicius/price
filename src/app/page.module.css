@@ -300,7 +300,7 @@
 }
 
 .besstBadge {
-  display: inline-flex;
+  display: inline-flex !important;
   align-items: center;
   gap: 4px;
   background: #e8f5ee;

@@ -68,8 +68,8 @@ function statusClass(asset: AssetRow) {
   if (asset.metrics.economicStatus === "near") {
     return styles.statusNear;
   }
-  return styles.statusExpensive;
 }
+const BESST_SECTORS = ["bancos", "energia", "saneamento", "seguros", "telecom"];
 
 export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
   const [assets, setAssets] = useState(initialAssets);
@@ -84,6 +84,17 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
   const [quoteDrafts, setQuoteDrafts] = useState<Record<string, string>>({});
   const [payoutDrafts, setPayoutDrafts] = useState<Record<string, string>>({});
   const [selectedAssetForChecklist, setSelectedAssetForChecklist] = useState<AssetRow | null>(null);
+  const [sectorFilter, setSectorFilter] = useState("all");
+
+  const uniqueSectors = useMemo(() => {
+    const sectors = new Set<string>();
+    for (const asset of assets) {
+      if (asset.sector) {
+        sectors.add(asset.sector);
+      }
+    }
+    return Array.from(sectors).sort();
+  }, [assets]);
 
   const normalizedTicker = ticker.trim();
 
@@ -103,16 +114,31 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
   }, [assets]);
 
   const visibleAssets = useMemo(() => {
-    if (filter === "all") {
-      return assets;
-    }
     return assets.filter((asset) => {
-      if (filter === "incomplete") {
-        return asset.metrics.dataState === "incomplete";
+      // 1. Status Filter
+      if (filter !== "all") {
+        if (filter === "incomplete") {
+          if (asset.metrics.dataState !== "incomplete") return false;
+        } else {
+          if (asset.metrics.economicStatus !== filter) return false;
+        }
       }
-      return asset.metrics.economicStatus === filter;
+
+      // 2. Sector Filter
+      if (sectorFilter !== "all") {
+        if (sectorFilter === "besst") {
+          const sectorLower = asset.sector?.toLowerCase() ?? "";
+          if (!BESST_SECTORS.includes(sectorLower)) return false;
+        } else if (sectorFilter === "none") {
+          if (asset.sector !== null && asset.sector !== "") return false;
+        } else {
+          if (asset.sector !== sectorFilter) return false;
+        }
+      }
+
+      return true;
     });
-  }, [assets, filter]);
+  }, [assets, filter, sectorFilter]);
 
   async function loadAssets() {
     const response = await fetch("/api/assets");
@@ -279,6 +305,20 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
           <option value="expensive">Caras</option>
           <option value="incomplete">Incompletos</option>
         </select>
+        <select
+          value={sectorFilter}
+          onChange={(event) => setSectorFilter(event.target.value)}
+          aria-label="Filtrar ativos por setor"
+        >
+          <option value="all">Todos os Setores</option>
+          <option value="besst">Apenas BESST</option>
+          <option value="none">Sem Setor</option>
+          {uniqueSectors.map((sec) => (
+            <option key={sec} value={sec}>
+              {sec}
+            </option>
+          ))}
+        </select>
       </div>
 
       {message ? (
@@ -309,6 +349,19 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
                 <td>
                   <strong>{asset.ticker}</strong>
                   {asset.name ? <span>{asset.name}</span> : null}
+                  {asset.sector ? (
+                    <span>
+                      {asset.sector}
+                      {BESST_SECTORS.includes(asset.sector.toLowerCase()) && (
+                        <span className={styles.besstBadge}>
+                          <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 6c1.66 0 3 1.34 3 3 0 1.66-1.34 3-3 3s-3-1.34-3-3c0-1.66 1.34-3 3-3zm0 12c-2.7 0-5.8-1.28-6-3h12c-.2 1.72-3.3 3-6 3z" />
+                          </svg>
+                          BESST
+                        </span>
+                      )}
+                    </span>
+                  ) : null}
                 </td>
                 <td>
                   <input
