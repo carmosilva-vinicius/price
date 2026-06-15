@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "@/app/page.module.css";
 
 type ChecklistItem = {
@@ -43,8 +43,6 @@ export function ChecklistModal({
   onClose,
   onSave
 }: ChecklistModalProps) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  
   const isStandard = currentSector ? STANDARD_SECTORS.includes(currentSector) : false;
   const [sectorSelect, setSectorSelect] = useState(
     currentSector ? (isStandard ? currentSector : "Outros") : ""
@@ -61,24 +59,16 @@ export function ChecklistModal({
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    const dialog = dialogRef.current;
-    if (dialog && typeof dialog.showModal === "function" && !dialog.open) {
-      try {
-        dialog.showModal();
-      } catch (err) {
-        console.error("Failed to show modal:", err);
-      }
-    }
-    return () => {
-      if (dialog && typeof dialog.close === "function" && dialog.open) {
-        try {
-          dialog.close();
-        } catch (err) {
-          console.error("Failed to close modal:", err);
-        }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
       }
     };
-  }, []);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onClose]);
 
   useEffect(() => {
     let active = true;
@@ -149,11 +139,9 @@ export function ChecklistModal({
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
-      <dialog
-        ref={dialogRef}
+      <div
         className={styles.modalContent}
         onClick={(e) => e.stopPropagation()}
-        onCancel={onClose}
       >
         <div className={styles.modalHeader}>
           <h2>
@@ -266,7 +254,7 @@ export function ChecklistModal({
             </button>
           </div>
         </form>
-      </dialog>
+      </div>
     </div>
   );
 }
