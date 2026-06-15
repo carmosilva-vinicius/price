@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "@/app/page.module.css";
+import { ChecklistModal } from "@/components/ChecklistModal";
 
 type AssetRow = {
   ticker: string;
@@ -10,6 +11,7 @@ type AssetRow = {
   currency: string | null;
   quoteSource: "api" | "manual" | null;
   updatedAt: string;
+  sector: string | null;
   annualPayouts: { year: number; amount: number; source: "api" | "manual" }[];
   metrics: {
     dataState: "complete" | "partial" | "incomplete";
@@ -81,6 +83,7 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
   const manualSaveSequenceRef = useRef(0);
   const [quoteDrafts, setQuoteDrafts] = useState<Record<string, string>>({});
   const [payoutDrafts, setPayoutDrafts] = useState<Record<string, string>>({});
+  const [selectedAssetForChecklist, setSelectedAssetForChecklist] = useState<AssetRow | null>(null);
 
   const normalizedTicker = ticker.trim();
 
@@ -296,6 +299,7 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
               <th>Status</th>
               <th>Origem</th>
               <th>Atualizacao</th>
+              <th>Qualitativo</th>
               <th>Acoes</th>
             </tr>
           </thead>
@@ -331,6 +335,14 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
                 </td>
                 <td>{asset.quoteSource ?? "-"}</td>
                 <td>{new Date(asset.updatedAt).toLocaleString("pt-BR")}</td>
+                <td>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedAssetForChecklist(asset)}
+                  >
+                    Checklist
+                  </button>
+                </td>
                 <td>
                   <details className={styles.payoutEditor}>
                     <summary>Dividendos</summary>
@@ -371,6 +383,18 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
           </tbody>
         </table>
       </div>
+      {selectedAssetForChecklist && (
+        <ChecklistModal
+          ticker={selectedAssetForChecklist.ticker}
+          companyName={selectedAssetForChecklist.name}
+          currentSector={selectedAssetForChecklist.sector}
+          onClose={() => setSelectedAssetForChecklist(null)}
+          onSave={(updatedAssets) => {
+            setAssets(updatedAssets);
+            setSelectedAssetForChecklist(null);
+          }}
+        />
+      )}
     </section>
   );
 }
