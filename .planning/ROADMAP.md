@@ -24,10 +24,10 @@ Introduce qualitative analysis (BESST sector filtering, qualitative checklist) a
   2. User can filter the dashboard to display only defensive "BESST" sectors.
   3. User can open a Barsi Checklist modal for any asset, toggle standard qualitative criteria, and save inputs which persist in SQLite.
 
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 Plans:
 
-- [ ] 01-01: SQLite schema migrations and sector/checklist update API endpoints
+- [x] 01-01: SQLite schema migrations and sector/checklist update API endpoints
 - [ ] 01-02: Dashboard UI dropdown filters and Checklist modal integration
 
 ### Phase 2: Passive Income Goal Calculator
@@ -68,6 +68,6 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 1. Sector & Checklist | v1.0 | 0/2 | Not started | - |
+| 1. Sector & Checklist | v1.0 | 1/2 | In Progress|  |
 | 2. Goal Calculator | v1.0 | 0/1 | Not started | - |
 | 3. Visual Charts | v1.0 | 0/1 | Not started | - |
