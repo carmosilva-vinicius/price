@@ -6,7 +6,7 @@ Introduce qualitative analysis (BESST sector filtering, qualitative checklist) a
 
 ## Phases
 
-- [ ] **Phase 1: Sector Tagging & Barsi Checklist** - Categorize assets by sector and track qualitative criteria in SQLite.
+- [x] **Phase 1: Sector Tagging & Barsi Checklist** - Categorize assets by sector and track qualitative criteria in SQLite.
 - [ ] **Phase 2: Passive Income Goal Calculator** - Build share/capital requirements simulator based on average payouts.
 - [ ] **Phase 3: Visual Dividend History Charts** - Render native React SVG dividend bar charts to visualize trends.
 
@@ -24,11 +24,11 @@ Introduce qualitative analysis (BESST sector filtering, qualitative checklist) a
   2. User can filter the dashboard to display only defensive "BESST" sectors.
   3. User can open a Barsi Checklist modal for any asset, toggle standard qualitative criteria, and save inputs which persist in SQLite.
 
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans executed
 Plans:
 
 - [x] 01-01: SQLite schema migrations and sector/checklist update API endpoints
-- [ ] 01-02: Dashboard UI dropdown filters and Checklist modal integration
+- [x] 01-02: Dashboard UI dropdown filters and Checklist modal integration
 
 ### Phase 2: Passive Income Goal Calculator
 
@@ -68,6 +68,6 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 1. Sector & Checklist | v1.0 | 1/2 | In Progress|  |
+| 1. Sector & Checklist | v1.0 | 2/2 | Complete | 2026-06-15 |
 | 2. Goal Calculator | v1.0 | 0/1 | Not started | - |
 | 3. Visual Charts | v1.0 | 0/1 | Not started | - |

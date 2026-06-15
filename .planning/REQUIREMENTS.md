@@ -6,13 +6,13 @@
 
 - [x] **SECT-01**: **Database Schema Migration**: Alter the SQLite `assets` table to add a nullable `sector` TEXT column in a safe, repeatable migration.
 - [x] **SECT-02**: **Backend Update Service & API**: Expose a `PUT /api/assets/[ticker]/sector` endpoint to assign a sector tag to an asset.
-- [ ] **SECT-03**: **BESST Filters in UI**: Implement a dashboard dropdown filter to select "All", "BESST Sectors Only", or individual sectors, displaying BESST indicators.
+- [x] **SECT-03**: **BESST Filters in UI**: Implement a dashboard dropdown filter to select "All", "BESST Sectors Only", or individual sectors, displaying BESST indicators.
 
 ### Barsi Qualitative Checklist (CHK)
 
 - [x] **CHK-01**: **Checklist Database Schema**: Create `asset_checklist` table to store status (yes/no/unsure) for each standard Barsi criterion per stock.
 - [x] **CHK-02**: **Backend Checklist APIs**: Create `GET /api/assets/[ticker]/checklist` and `PUT /api/assets/[ticker]/checklist` endpoints to retrieve and persist stock checklist answers.
-- [ ] **CHK-03**: **Interactive Checklist UI**: Render a modal overlay in the dashboard allowing users to view and toggle checklist items for any tracked asset, updating the database state synchronously.
+- [x] **CHK-03**: **Interactive Checklist UI**: Render a modal overlay in the dashboard allowing users to view and toggle checklist items for any tracked asset, updating the database state synchronously.
 
 ## v2 Requirements (Deferred)
 
@@ -37,7 +37,7 @@
 |----------------|--------------|--------|
 | SECT-01 | Phase 1 | Complete |
 | SECT-02 | Phase 1 | Complete |
-| SECT-03 | Phase 1 | Pending |
+| SECT-03 | Phase 1 | Complete |
 | CHK-01 | Phase 1 | Complete |
 | CHK-02 | Phase 1 | Complete |
-| CHK-03 | Phase 1 | Pending |
+| CHK-03 | Phase 1 | Complete |

@@ -20,8 +20,8 @@ Identify highly discounted stocks that pay reliable dividends to maximize the us
 
 ### Active
 
-- [ ] BESST Sector Classification: Tag stocks by Barsi's BESST sectors (*Bancos, Energia, Saneamento, Seguros, Telecom*) and filter/sort the dashboard by these categories.
-- [ ] SQLite-backed Barsi Checklist: Pre-populate stocks with default Barsi checklist items (sustainable payout, stable debt, history of profit) stored in the SQLite database and editable per asset in the UI.
+- [x] BESST Sector Classification: Tag stocks by Barsi's BESST sectors (*Bancos, Energia, Saneamento, Seguros, Telecom*) and filter/sort the dashboard by these categories.
+- [x] SQLite-backed Barsi Checklist: Pre-populate stocks with default Barsi checklist items (sustainable payout, stable debt, history of profit) stored in the SQLite database and editable per asset in the UI.
 - [ ] Passive Income Goal & Share Calculator: Allow users to specify target monthly passive income and calculate the number of shares and total capital required to achieve it.
 - [ ] Visual Dividend History Charts: Display a visual 5-year dividend history bar chart for individual stocks to identify growth or decline trends.
 
@@ -42,10 +42,10 @@ Luiz Barsi's strategy focuses on building a "future guarantee portfolio" of divi
 
 ## Key Decisions
 
-| Decision | Rationale | Outcome |
-|----------|-----------|---------|
-| Implement Option 1 (BESST Sectors & Checklist) first | Establishes the database schemas, UI grids, and filter hooks needed before layering calculators and charts. | — Pending |
-| Store Barsi Checklist in SQLite database | Enables persistency and allows customization of checklist answers per asset, rather than hardcoding static rules in the UI. | — Pending |
+| Implement Option 1 (BESST Sectors & Checklist) first | Establishes the database schemas, UI grids, and filter hooks needed before layering calculators and charts. | — Complete (Phase 1) |
+| Store Barsi Checklist in SQLite database | Enables persistency and allows customization of checklist answers per asset, rather than hardcoding static rules in the UI. | — Complete (Phase 1) |
+| Sequential Checklist & Sector Save Lifecycle | Minimizes REST calls and keeps UI state synchronized by saving both qualitative updates under one transaction-like flow. | — Complete (Phase 1) |
+| Native Dialog Modal Overlay | Uses HTML5 <dialog> with conditional mounting guard to ensure clean accessibility support and proper component-state unmounting. | — Complete (Phase 1) |
 
 ## Evolution
 
