@@ -20,10 +20,28 @@ export async function fetchBrapiAsset(tickerInput: string): Promise<BrapiQuoteRe
     params.set("token", token);
   }
 
-  const response = await fetch(`https://brapi.dev/api/quote/${ticker}?${params.toString()}`, {
+  let response = await fetch(`https://brapi.dev/api/quote/${ticker}?${params.toString()}`, {
     headers: { accept: "application/json" },
     cache: "no-store"
   });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      throw new Error(
+        "Token da BRAPI ausente ou inválido. Obtenha um token gratuito em https://brapi.dev e configure a variável BRAPI_TOKEN no seu arquivo .env.local"
+      );
+    }
+    if (response.status === 400) {
+      const fallbackParams = new URLSearchParams();
+      if (token) {
+        fallbackParams.set("token", token);
+      }
+      response = await fetch(`https://brapi.dev/api/quote/${ticker}?${fallbackParams.toString()}`, {
+        headers: { accept: "application/json" },
+        cache: "no-store"
+      });
+    }
+  }
 
   if (!response.ok) {
     throw new Error(`brapi request failed with status ${response.status}`);

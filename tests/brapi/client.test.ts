@@ -41,6 +41,44 @@ describe("brapi client", () => {
     );
   });
 
+  it("throws a descriptive error on 401 response status", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({ ok: false, status: 401 })
+    );
+
+    await expect(fetchBrapiAsset("TAEE11")).rejects.toThrow(
+      "Token da BRAPI ausente ou inválido"
+    );
+  });
+
+  it("falls back to a simple quote fetch on 400 response status", async () => {
+    vi.stubEnv("BRAPI_TOKEN", "secret-token");
+    let callCount = 0;
+    const fetchMock = vi.fn().mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) {
+        return { ok: false, status: 400 };
+      }
+      return {
+        ok: true,
+        json: async () => ({ results: [{ symbol: "TAEE11", regularMarketPrice: 30 }] })
+      };
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await fetchBrapiAsset("TAEE11");
+
+    expect(result).toEqual({ symbol: "TAEE11", regularMarketPrice: 30 });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    const [secondUrl] = fetchMock.mock.calls[1];
+    const secondRequestUrl = new URL(String(secondUrl));
+    expect(secondRequestUrl.searchParams.get("range")).toBeNull();
+    expect(secondRequestUrl.searchParams.get("dividends")).toBeNull();
+    expect(secondRequestUrl.searchParams.get("token")).toBe("secret-token");
+  });
+
   it("throws when results are empty or malformed", async () => {
     vi.stubGlobal(
       "fetch",

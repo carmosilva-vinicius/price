@@ -81,8 +81,23 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
   const busyTickersRef = useRef<Set<string>>(new Set());
   const isCreatingRef = useRef(false);
   const manualSaveSequenceRef = useRef(0);
-  const [quoteDrafts, setQuoteDrafts] = useState<Record<string, string>>({});
-  const [payoutDrafts, setPayoutDrafts] = useState<Record<string, string>>({});
+  const [mounted, setMounted] = useState(false);
+  const [quoteDrafts, setQuoteDrafts] = useState<Record<string, string>>(() => {
+    const drafts: Record<string, string> = {};
+    for (const asset of initialAssets) {
+      drafts[asset.ticker] = asset.currentPrice?.toString() ?? "";
+    }
+    return drafts;
+  });
+  const [payoutDrafts, setPayoutDrafts] = useState<Record<string, string>>(() => {
+    const drafts: Record<string, string> = {};
+    for (const asset of initialAssets) {
+      for (const payout of asset.annualPayouts) {
+        drafts[`${asset.ticker}:${payout.year}`] = payout.amount.toString();
+      }
+    }
+    return drafts;
+  });
   const [selectedAssetForChecklist, setSelectedAssetForChecklist] = useState<AssetRow | null>(null);
   const [sectorFilter, setSectorFilter] = useState("all");
 
@@ -97,6 +112,10 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
   }, [assets]);
 
   const normalizedTicker = ticker.trim();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const nextQuoteDrafts: Record<string, string> = {};
@@ -387,7 +406,7 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
                   </span>
                 </td>
                 <td>{asset.quoteSource ?? "-"}</td>
-                <td>{new Date(asset.updatedAt).toLocaleString("pt-BR")}</td>
+                <td>{mounted ? new Date(asset.updatedAt).toLocaleString("pt-BR") : ""}</td>
                 <td>
                   <button
                     type="button"
