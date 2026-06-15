@@ -7,9 +7,17 @@ export type StoredAnnualPayout = {
   source: DataSource;
 };
 
+export type StoredChecklistRow = {
+  ticker: string;
+  criterionId: string;
+  status: "yes" | "no" | "unsure";
+  updatedAt: string;
+};
+
 export type StoredAsset = {
   ticker: string;
   name: string | null;
+  sector: string | null;
   currentPrice: number | null;
   currency: string | null;
   quoteSource: DataSource | null;
@@ -147,6 +155,7 @@ export function createAssetRepository(db: Database.Database) {
         `SELECT
            a.ticker,
            a.name,
+           a.sector,
            a.updated_at as updatedAt,
            q.price as currentPrice,
            q.currency,
@@ -167,11 +176,45 @@ export function createAssetRepository(db: Database.Database) {
     }));
   }
 
+  function updateSector(tickerInput: string, sector: string | null) {
+    const ticker = normalizeTicker(tickerInput);
+    const now = new Date().toISOString();
+    createAsset(ticker);
+    db.prepare(`UPDATE assets SET sector = ?, updated_at = ? WHERE ticker = ?`).run(sector, now, ticker);
+  }
+
+  function getChecklist(tickerInput: string): StoredChecklistRow[] {
+    const ticker = normalizeTicker(tickerInput);
+    return db
+      .prepare(
+        `SELECT ticker, criterion_id as criterionId, status, updated_at as updatedAt
+         FROM asset_checklist
+         WHERE ticker = ?`
+      )
+      .all(ticker) as StoredChecklistRow[];
+  }
+
+  function upsertChecklist(tickerInput: string, criterionId: string, status: "yes" | "no" | "unsure") {
+    const ticker = normalizeTicker(tickerInput);
+    const now = new Date().toISOString();
+    createAsset(ticker);
+    db.prepare(
+      `INSERT INTO asset_checklist (ticker, criterion_id, status, updated_at)
+       VALUES (?, ?, ?, ?)
+       ON CONFLICT(ticker, criterion_id)
+       DO UPDATE SET status = excluded.status, updated_at = excluded.updated_at`
+    ).run(ticker, criterionId, status, now);
+    db.prepare(`UPDATE assets SET updated_at = ? WHERE ticker = ?`).run(now, ticker);
+  }
+
   return {
     createAsset,
     upsertQuote,
     upsertAnnualPayout,
     refreshApiData,
-    listAssets
+    listAssets,
+    updateSector,
+    getChecklist,
+    upsertChecklist
   };
 }
