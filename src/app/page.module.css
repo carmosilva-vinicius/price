@@ -193,3 +193,156 @@
   border-radius: 6px;
   padding: 0 8px;
 }
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 24px;
+  width: min(500px, calc(100vw - 32px));
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.modalHeader h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text);
+}
+
+.modalCloseBtn {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.checklistForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.checklistForm label {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.checklistForm select,
+.checklistForm input[type="text"] {
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0 10px;
+  background: white;
+  color: var(--text);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.criterionRow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+
+.criterionRow:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.criterionTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.radioGroup {
+  display: flex;
+  gap: 12px;
+}
+
+.radioOption {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 44px; /* Touch target guideline */
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 8px;
+}
+
+.besstBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #e8f5ee;
+  color: #1f7a4d;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.besstBadge svg {
+  width: 12px;
+  height: 12px;
+  fill: currentColor;
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.dialogActions button {
+  height: 36px;
+  border-radius: 6px;
+  padding: 0 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dialogActions button[type="submit"] {
+  background: var(--blue);
+  color: white;
+  border: 1px solid var(--blue);
+}
+
+.dialogActions button[type="button"] {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--line);
+}
+
