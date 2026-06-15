@@ -62,9 +62,22 @@ export function ChecklistModal({
 
   useEffect(() => {
     const dialog = dialogRef.current;
-    if (dialog && !dialog.open) {
-      dialog.showModal();
+    if (dialog && typeof dialog.showModal === "function" && !dialog.open) {
+      try {
+        dialog.showModal();
+      } catch (err) {
+        console.error("Failed to show modal:", err);
+      }
     }
+    return () => {
+      if (dialog && typeof dialog.close === "function" && dialog.open) {
+        try {
+          dialog.close();
+        } catch (err) {
+          console.error("Failed to close modal:", err);
+        }
+      }
+    };
   }, []);
 
   useEffect(() => {

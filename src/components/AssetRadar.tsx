@@ -84,16 +84,24 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
   const [mounted, setMounted] = useState(false);
   const [quoteDrafts, setQuoteDrafts] = useState<Record<string, string>>(() => {
     const drafts: Record<string, string> = {};
-    for (const asset of initialAssets) {
-      drafts[asset.ticker] = asset.currentPrice?.toString() ?? "";
+    if (initialAssets && Array.isArray(initialAssets)) {
+      for (const asset of initialAssets) {
+        if (asset && asset.ticker) {
+          drafts[asset.ticker] = asset.currentPrice?.toString() ?? "";
+        }
+      }
     }
     return drafts;
   });
   const [payoutDrafts, setPayoutDrafts] = useState<Record<string, string>>(() => {
     const drafts: Record<string, string> = {};
-    for (const asset of initialAssets) {
-      for (const payout of asset.annualPayouts) {
-        drafts[`${asset.ticker}:${payout.year}`] = payout.amount.toString();
+    if (initialAssets && Array.isArray(initialAssets)) {
+      for (const asset of initialAssets) {
+        if (asset && asset.ticker && asset.annualPayouts) {
+          for (const payout of asset.annualPayouts) {
+            drafts[`${asset.ticker}:${payout.year}`] = payout.amount.toString();
+          }
+        }
       }
     }
     return drafts;
@@ -121,10 +129,16 @@ export function AssetRadar({ initialAssets }: { initialAssets: AssetRow[] }) {
     const nextQuoteDrafts: Record<string, string> = {};
     const nextPayoutDrafts: Record<string, string> = {};
 
-    for (const asset of assets) {
-      nextQuoteDrafts[asset.ticker] = asset.currentPrice?.toString() ?? "";
-      for (const payout of asset.annualPayouts) {
-        nextPayoutDrafts[`${asset.ticker}:${payout.year}`] = payout.amount.toString();
+    if (assets && Array.isArray(assets)) {
+      for (const asset of assets) {
+        if (asset && asset.ticker) {
+          nextQuoteDrafts[asset.ticker] = asset.currentPrice?.toString() ?? "";
+          if (asset.annualPayouts) {
+            for (const payout of asset.annualPayouts) {
+              nextPayoutDrafts[`${asset.ticker}:${payout.year}`] = payout.amount.toString();
+            }
+          }
+        }
       }
     }
 
