@@ -35,4 +35,22 @@ export function ensureSchema(db: Database.Database) {
       value TEXT NOT NULL
     );
   `);
+
+  const columns = db.prepare("PRAGMA table_info(assets)").all() as Array<{ name: string }>;
+  const hasSector = columns.some((col) => col.name === "sector");
+  if (!hasSector) {
+    db.exec("ALTER TABLE assets ADD COLUMN sector TEXT;");
+  }
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS asset_checklist (
+      ticker TEXT NOT NULL,
+      criterion_id TEXT NOT NULL,
+      status TEXT NOT NULL CHECK (status IN ('yes', 'no', 'unsure')),
+      updated_at TEXT NOT NULL,
+      PRIMARY KEY (ticker, criterion_id),
+      FOREIGN KEY (ticker) REFERENCES assets(ticker) ON DELETE CASCADE
+    );
+  `);
 }
+
