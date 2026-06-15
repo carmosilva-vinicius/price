@@ -14,7 +14,7 @@ Introduce qualitative analysis (BESST sector filtering, qualitative checklist) a
 
 ### Phase 1: Sector Tagging & Barsi Checklist
 
-**Goal:** Categorize assets by sector (highlighting Barsi's defensive BESST sectors) and store a customizable qualitative checklist in SQLite.
+**Goal:** As a stock investor, I want to categorize my stocks by sector and fill out a Barsi checklist, so that I can identify discounted defensive assets.
 **Mode:** mvp
 **Depends on:** Nothing (first phase)
 **Requirements:** SECT-01, SECT-02, SECT-03, CHK-01, CHK-02, CHK-03
